@@ -1,0 +1,25 @@
+=== CREANDO USUARIO ADMINISTRADOR ===
+
+Fecha: 2025-11-20T03:38:12.724Z
+
+1. Conectando a la base de datos...
+   ✅ Conectado exitosamente
+
+2. Verificando si existe el usuario: admin@flow360.com
+   Usuarios encontrados: 0
+
+3. Hasheando contraseña...
+   ✅ Contraseña hasheada
+
+4. Insertando usuario en la base de datos...
+   ✅ Usuario creado con ID: 1
+
+=== USUARIO CREADO EXITOSAMENTE ===
+
+Credenciales:
+  Email: admin@flow360.com
+  Password: admin123
+
+⚠️  IMPORTANTE: Cambia la contraseña después del primer login!
+
+✅ Proceso completado

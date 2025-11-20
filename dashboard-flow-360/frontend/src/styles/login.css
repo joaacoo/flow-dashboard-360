@@ -1,0 +1,303 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,500);
+@import url(https://fonts.googleapis.com/css?family=Lato:400,900);
+
+/* Reset para el login */
+.login-body {
+    min-height: 100vh;
+    background-color: #333;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* BOX LOGIN */
+.box2 {
+    position: relative;
+    margin: auto;
+    z-index: 200;
+    width: 400px;
+    color: #337ab7;
+    padding: 10px 0px;
+    font-family: "Segoe UI" !important;
+    background: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.box2 h1 {
+    text-align: center;
+    margin: 19px;
+    font-size: 40px;
+    font-family: "Lato", sans-serif;
+}
+
+.box2 button,
+.box2 button:active {
+    background: #eb6456;
+    border: 0 !important;
+    color: #fff;
+    padding: 10px;
+    font-size: 20px;
+    width: 330px;
+    margin: 10px auto;
+    display: block;
+    cursor: pointer;
+    font-family: "Segoe UI" !important;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.box2 button:hover {
+    background: #d55d4f;
+}
+
+/* GRUPOS DE INPUTS */
+.group {
+    position: relative;
+    margin-bottom: 35px;
+    margin-left: 40px;
+    font-family: "Segoe UI" !important;
+}
+
+.primero {
+    position: relative;
+    margin-bottom: 35px;
+    margin-left: 40px;
+    font-family: "Segoe UI" !important;
+}
+
+.ultimo {
+    position: relative;
+    margin-bottom: 23.5px !important;
+    margin-left: 40px;
+    font-family: "Segoe UI" !important;
+}
+
+/* INPUTS MATERIAL DESIGN */
+.inputMaterial {
+    font-size: 18px;
+    padding: 10px 10px 10px 5px;
+    display: block;
+    width: 300px;
+    border: none;
+    border-bottom: 1px solid #757575;
+    font-family: "Segoe UI" !important;
+    background: transparent;
+}
+
+.inputMaterial:focus {
+    outline: none;
+}
+
+/* LABEL */
+label {
+    color: #999;
+    font-size: 18px;
+    font-weight: normal;
+    position: absolute;
+    pointer-events: none;
+    left: 5px;
+    top: 10px;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+}
+
+/* active state */
+.inputMaterial:focus~label,
+.inputMaterial:valid~label {
+    top: -20px;
+    font-size: 14px;
+    color: #337ab7;
+    font-family: "Segoe UI" !important;
+}
+
+/* BOTTOM BARS */
+.bar {
+    position: relative;
+    display: block;
+    width: 315px;
+}
+
+.bar:before,
+.bar:after {
+    content: '';
+    height: 2px;
+    width: 0;
+    bottom: 1px;
+    position: absolute;
+    background: #337ab7;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+    font-family: "Segoe UI" !important;
+}
+
+.bar:before {
+    left: 50%;
+}
+
+.bar:after {
+    right: 50%;
+}
+
+/* active state */
+.inputMaterial:focus~.bar:before,
+.inputMaterial:focus~.bar:after {
+    width: 50%;
+}
+
+/* HIGHLIGHT */
+.inputMaterial:focus~.highlight {
+    -webkit-animation: inputHighlighter 0.3s ease;
+    -moz-animation: inputHighlighter 0.3s ease;
+    animation: inputHighlighter 0.3s ease;
+}
+
+/* ANIMATIONS */
+@-webkit-keyframes inputHighlighter {
+    from {
+        background: #5264ae;
+    }
+
+    to {
+        width: 0;
+        background: transparent;
+    }
+}
+
+@-moz-keyframes inputHighlighter {
+    from {
+        background: #5264ae;
+    }
+
+    to {
+        width: 0;
+        background: transparent;
+    }
+}
+
+@keyframes inputHighlighter {
+    from {
+        background: #5264ae;
+    }
+
+    to {
+        width: 0;
+        background: transparent;
+    }
+}
+
+/* LOADER */
+#loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.loader-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3091c6;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ERROR */
+.error {
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* BOTONES DE ENLACES */
+.boton-login {
+    cursor: pointer;
+    text-decoration: none;
+    color: #337ab7;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.boton-login:hover {
+    color: #23527c;
+    text-decoration: underline;
+}
+
+.text-left {
+    text-align: left;
+    display: inline-block;
+}
+
+.text-right {
+    text-align: right;
+    display: inline-block;
+}
+
+/* RESPONSIVE */
+@media (max-width: 767px) {
+    .zoom {
+        zoom: 90%;
+    }
+
+    .box2 {
+        width: 90%;
+        max-width: 400px;
+    }
+
+    .group,
+    .primero {
+        margin-left: 20px;
+    }
+
+    .inputMaterial {
+        width: calc(100% - 40px);
+    }
+
+    .bar {
+        width: calc(100% - 25px);
+    }
+
+    .box2 button {
+        width: calc(100% - 40px);
+    }
+
+    .box2 h1 {
+        font-size: 32px;
+    }
+
+    .hidden-xs {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .zoom {
+        zoom: 95%;
+    }
+
+    .hidden-sm {
+        display: none !important;
+    }
+
+    .padding {
+        padding-top: 20px !important;
+    }
+}
