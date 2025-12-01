@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Truck, Package, MapPin, Clock, CheckCircle, AlertCircle, Navigation } from 'lucide-react';
+import { Truck, Package, MapPin, Clock, CheckCircle, AlertCircle, Navigation, ChevronRight } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -13,9 +13,9 @@ L.Icon.Default.mergeOptions({
 });
 
 // Icono personalizado para camiones
-const truckIcon = (color) => L.divIcon({
+const truckIcon = (color, selected) => L.divIcon({
     className: 'custom-truck-icon',
-    html: `<div style="background-color: ${color}; padding: 8px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+    html: `<div style="background-color: ${color}; padding: 8px; border-radius: 50%; box-shadow: 0 0 0 ${selected ? '4px rgba(99, 102, 241, 0.5)' : '0 2px 8px rgba(0,0,0,0.3)'}; transform: ${selected ? 'scale(1.2)' : 'scale(1)'}; transition: all 0.3s ease;">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
       <path d="M15 18H9"></path>
@@ -28,7 +28,21 @@ const truckIcon = (color) => L.divIcon({
     iconAnchor: [20, 20],
 });
 
+// Componente para centrar el mapa
+const MapUpdater = ({ center }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (center) {
+            map.flyTo(center, 13, { duration: 1.5 });
+        }
+    }, [center, map]);
+    return null;
+};
+
 const Logistica = () => {
+    const [selectedTruckId, setSelectedTruckId] = useState(null);
+    const [mapCenter, setMapCenter] = useState([-34.6037, -58.3816]);
+
     const kpis = {
         entregasATiempo: 94.5,
         camionesDisponibles: 12,
@@ -161,6 +175,11 @@ const Logistica = () => {
         return () => clearInterval(interval);
     }, []);
 
+    const handleTruckSelect = (camion) => {
+        setSelectedTruckId(camion.id);
+        setMapCenter([camion.lat, camion.lng]);
+    };
+
     const getEstadoBadge = (estado, demorado) => {
         if (demorado) {
             return <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Demorado</span>;
@@ -224,18 +243,62 @@ const Logistica = () => {
                 </div>
             </div>
 
-            {/* Mapa GPS Real */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                    <Navigation className="text-blue-600" size={24} />
-                    Rastreo GPS en Tiempo Real
-                </h2>
-                <div className="h-[600px] rounded-lg overflow-hidden">
+            {/* Layout Mapa + Lista */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[600px]">
+                {/* Lista de Camiones (Sidebar del Mapa) */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col">
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                        <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <Truck size={20} className="text-blue-600" />
+                            Flota Activa
+                        </h2>
+                    </div>
+                    <div className="overflow-y-auto flex-1 p-2 space-y-2">
+                        {camiones.map(camion => (
+                            <div
+                                key={camion.id}
+                                onClick={() => handleTruckSelect(camion)}
+                                className={`p-3 rounded-lg cursor-pointer transition-all border-l-4 ${selectedTruckId === camion.id
+                                        ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 shadow-sm'
+                                        : 'hover:bg-slate-50 dark:hover:bg-slate-700 border-transparent'
+                                    }`}
+                            >
+                                <div className="flex justify-between items-start mb-1">
+                                    <span className="font-semibold text-slate-800 dark:text-white">{camion.nombre}</span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${camion.estado === 'En ruta'
+                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                        }`}>
+                                        {camion.estado}
+                                    </span>
+                                </div>
+                                <div className="text-sm text-slate-500 dark:text-slate-400 space-y-1">
+                                    <div className="flex items-center gap-1">
+                                        <MapPin size={14} />
+                                        <span className="truncate">{camion.destino}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span>{camion.conductor}</span>
+                                        {camion.velocidad > 0 && (
+                                            <span className="text-xs font-mono bg-slate-100 dark:bg-slate-700 px-1 rounded">
+                                                {camion.velocidad} km/h
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Mapa GPS Real */}
+                <div className="lg:col-span-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-1 overflow-hidden relative">
                     <MapContainer
-                        center={[-34.6037, -58.3816]}
-                        zoom={5}
-                        style={{ height: '100%', width: '100%' }}
+                        center={mapCenter}
+                        zoom={6}
+                        style={{ height: '100%', width: '100%', borderRadius: '0.75rem' }}
                     >
+                        <MapUpdater center={mapCenter} />
                         <TileLayer
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -244,7 +307,10 @@ const Logistica = () => {
                             <Marker
                                 key={camion.id}
                                 position={[camion.lat, camion.lng]}
-                                icon={truckIcon(camion.estado === 'En ruta' ? '#6366f1' : '#10b981')}
+                                icon={truckIcon(camion.estado === 'En ruta' ? '#6366f1' : '#10b981', selectedTruckId === camion.id)}
+                                eventHandlers={{
+                                    click: () => handleTruckSelect(camion),
+                                }}
                             >
                                 <Popup>
                                     <div className="p-2">
@@ -262,19 +328,19 @@ const Logistica = () => {
                             </Marker>
                         ))}
                     </MapContainer>
-                </div>
-                <div className="mt-4 flex items-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-indigo-500 rounded-full"></div>
-                        <span className="text-slate-700 dark:text-slate-300">En Ruta</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                        <span className="text-slate-700 dark:text-slate-300">Disponible</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Navigation size={16} className="text-blue-600" />
-                        <span className="text-slate-700 dark:text-slate-300">Actualización en tiempo real (cada 5s)</span>
+
+                    {/* Leyenda flotante */}
+                    <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-3 rounded-lg shadow-lg text-sm z-[1000]">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>
+                                <span className="text-slate-700 dark:text-slate-300">En Ruta</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span className="text-slate-700 dark:text-slate-300">Disponible</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -287,8 +353,8 @@ const Logistica = () => {
                         <div
                             key={envio.id}
                             className={`p-4 rounded-lg border-2 transition-all hover:shadow-md ${envio.demorado
-                                    ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
-                                    : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700'
+                                ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
+                                : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700'
                                 }`}
                         >
                             <div className="flex items-start justify-between mb-3">

@@ -220,8 +220,8 @@ const Stock = () => {
                                     </div>
                                     <div className="text-right">
                                         <span className={`px-3 py-1 text-xs font-semibold rounded-full ${mov.tipo === 'Entrada' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                                mov.tipo === 'Salida' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                            mov.tipo === 'Salida' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                                             }`}>
                                             {mov.tipo}
                                         </span>
@@ -251,7 +251,7 @@ const Stock = () => {
                                             <p className="text-sm text-slate-500 dark:text-slate-400">{ajuste.fecha} - {ajuste.motivo}</p>
                                         </div>
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${ajuste.estado === 'Aprobado' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                                             }`}>
                                             {ajuste.estado}
                                         </span>
@@ -352,32 +352,34 @@ const Stock = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
                                         Stock Inicial
+                                        <span className="text-xs text-slate-400 font-normal" title="Cantidad física actual en depósito">(?)</span>
                                     </label>
                                     <input
                                         type="number"
                                         value={formData.stockInicial}
                                         onChange={(e) => setFormData({ ...formData, stockInicial: parseInt(e.target.value) || 0 })}
                                         className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        placeholder="0"
+                                        placeholder="Ej: 100"
                                         min="0"
                                         required
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
                                         Punto de Pedido
+                                        <span className="text-xs text-slate-400 font-normal" title="Alerta cuando el stock baje de esta cantidad">(?)</span>
                                     </label>
                                     <input
                                         type="number"
                                         value={formData.puntoPedido}
                                         onChange={(e) => setFormData({ ...formData, puntoPedido: parseInt(e.target.value) || 0 })}
                                         className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        placeholder="0"
+                                        placeholder="Ej: 10"
                                         min="0"
                                         required
                                     />

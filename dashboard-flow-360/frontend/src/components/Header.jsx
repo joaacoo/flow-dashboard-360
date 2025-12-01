@@ -84,14 +84,14 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
                 {/* Botón de modo oscuro/claro */}
                 <button
                     onClick={toggleDarkMode}
-                    className="p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-transparent hover:border-slate-300 dark:hover:border-slate-600"
+                    className="p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all duration-300 hover:scale-110"
                     title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                     type="button"
                 >
                     {darkMode ? (
                         <Sun className="text-yellow-500" size={24} />
                     ) : (
-                        <Moon className="text-slate-700" size={24} />
+                        <Moon className="text-slate-600 dark:text-slate-300" size={24} />
                     )}
                 </button>
 

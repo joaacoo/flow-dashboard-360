@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import Greeting from '../components/Greeting';
+import { useAuth } from '../hooks/useAuth';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [salesData, setSalesData] = useState(null);
   const [stockData, setStockData] = useState(null);
 
@@ -28,7 +31,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-8">Dashboard General</h1>
+      <Greeting userName={user?.nombre || 'Usuario'} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">

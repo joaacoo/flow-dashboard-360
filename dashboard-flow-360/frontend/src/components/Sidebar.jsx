@@ -47,21 +47,26 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
         {/* Menú de navegación */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative ${location.pathname === item.path
-                ? 'bg-[#3091c6]/10 text-[#3091c6]'
-                : 'text-white hover:bg-slate-800 hover:text-white'
-                }`}
-            >
-              {location.pathname === item.path && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#3091c6] rounded-r"></div>
+          {menuItems.map((item, index) => (
+            <div key={item.path}>
+              <Link
+                to={item.path}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative ${location.pathname === item.path
+                  ? 'bg-[#3091c6]/10 text-[#3091c6]'
+                  : 'text-white hover:bg-slate-800 hover:text-white'
+                  }`}
+              >
+                {location.pathname === item.path && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#3091c6] rounded-r"></div>
+                )}
+                <item.icon size={20} className="flex-shrink-0" />
+                <span className="font-medium">{item.label}</span>
+              </Link>
+              {/* Separador sutil */}
+              {index < menuItems.length - 1 && (
+                <div className="mx-4 border-b border-slate-800/50 my-1"></div>
               )}
-              <item.icon size={20} className="flex-shrink-0" />
-              <span className="font-medium">{item.label}</span>
-            </Link>
+            </div>
           ))}
         </nav>
 

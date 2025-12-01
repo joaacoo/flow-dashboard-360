@@ -13,6 +13,7 @@ const Register = () => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const navigate = useNavigate();
 
@@ -80,8 +81,10 @@ const Register = () => {
             });
 
             if (response.data) {
-                alert('Usuario registrado exitosamente. Ahora puedes iniciar sesión.');
-                navigate('/login');
+                setSuccessMessage('¡Usuario registrado exitosamente! Redirigiendo al login...');
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
             }
         } catch (err) {
             setLoading(false);
@@ -213,6 +216,15 @@ const Register = () => {
                                 className="error"
                                 dangerouslySetInnerHTML={{ __html: passwordError || error }}
                             />
+                        )}
+
+                        {successMessage && (
+                            <div
+                                style={{ color: 'green', paddingLeft: '37px', fontWeight: 'bold' }}
+                                className="success"
+                            >
+                                {successMessage}
+                            </div>
                         )}
 
                         <br />
