@@ -7,9 +7,41 @@ const register = async (req, res) => {
   const { nombre, email, llave, password } = req.body;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Validar que todos los campos estén presentes
+    if (!nombre || !email || !llave || !password) {
+      return res.status(400).json({
+        message: 'Todos los campos son obligatorios'
+      });
+    }
+
     const pool = await poolPromise;
 
+    // Verificar si el email ya existe
+    const emailCheck = await pool.request()
+      .input('email', sql.VarChar, email)
+      .query('SELECT id FROM usuarios WHERE email = @email');
+
+    if (emailCheck.recordset.length > 0) {
+      return res.status(400).json({
+        message: 'El email ya está registrado'
+      });
+    }
+
+    // Verificar si la llave ya existe
+    const llaveCheck = await pool.request()
+      .input('llave', sql.VarChar, llave)
+      .query('SELECT id FROM usuarios WHERE llave = @llave');
+
+    if (llaveCheck.recordset.length > 0) {
+      return res.status(400).json({
+        message: 'La llave ya está en uso'
+      });
+    }
+
+    // Hash de la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insertar el nuevo usuario
     const result = await pool.request()
       .input('nombre', sql.VarChar, nombre)
       .input('email', sql.VarChar, email)
@@ -17,10 +49,25 @@ const register = async (req, res) => {
       .input('password', sql.VarChar, hashedPassword)
       .query('INSERT INTO usuarios (nombre, email, llave, password) OUTPUT Inserted.id, Inserted.nombre, Inserted.email VALUES (@nombre, @email, @llave, @password)');
 
-    res.status(201).json(result.recordset[0]);
+    res.status(201).json({
+      message: 'Usuario registrado exitosamente',
+      user: result.recordset[0]
+    });
   } catch (error) {
     console.error('Error en register:', error);
-    res.status(500).json({ message: 'Error al registrar usuario', error: error.message });
+
+    // Manejo específico de errores de SQL Server
+    if (error.number === 2627 || error.number === 2601) {
+      // Error de clave duplicada
+      return res.status(400).json({
+        message: 'El email o la llave ya están registrados'
+      });
+    }
+
+    res.status(500).json({
+      message: 'Error al registrar usuario',
+      error: error.message
+    });
   }
 };
 

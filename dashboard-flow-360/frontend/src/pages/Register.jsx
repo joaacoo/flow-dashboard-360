@@ -72,7 +72,7 @@ const Register = () => {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:4011/api/auth/register', {
+            const response = await axios.post('http://localhost:4012/api/auth/register', {
                 nombre: formData.nombre,
                 email: formData.email,
                 llave: formData.llave,
