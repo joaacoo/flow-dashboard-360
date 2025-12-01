@@ -53,7 +53,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               to={item.path}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative ${location.pathname === item.path
                 ? 'bg-[#3091c6]/10 text-[#3091c6]'
-                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+                : 'text-white hover:bg-slate-800 hover:text-white'
                 }`}
             >
               {location.pathname === item.path && (

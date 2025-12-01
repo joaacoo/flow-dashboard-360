@@ -33,6 +33,7 @@ const crmRoutes = require('./routes/crmRoutes');
 const produccionRoutes = require('./routes/produccionRoutes');
 const logisticaRoutes = require('./routes/logisticaRoutes');
 const tangoRoutes = require('./routes/tangoRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/ventas', ventasRoutes);
@@ -43,6 +44,7 @@ app.use('/api/crm', crmRoutes);
 app.use('/api/produccion', produccionRoutes);
 app.use('/api/logistica', logisticaRoutes);
 app.use('/api/tango', tangoRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });

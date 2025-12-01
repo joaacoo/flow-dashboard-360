@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Moon, Sun, LogOut, User, Menu } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import NotificationBell from './NotificationBell';
 
 const Header = ({ sidebarOpen, setSidebarOpen }) => {
     const { user, logout } = useAuth();
@@ -93,6 +94,9 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
                         <Moon className="text-slate-700" size={24} />
                     )}
                 </button>
+
+                {/* Notificaciones */}
+                <NotificationBell />
 
                 {/* Botón de cerrar sesión */}
                 <button
