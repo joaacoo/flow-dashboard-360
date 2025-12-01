@@ -1,74 +1,65 @@
+// Script para verificar usuarios y probar el login
+const poolPromise = require('./config/db');
+const sql = require('mssql');
 const bcrypt = require('bcryptjs');
-const { poolPromise, sql } = require('./config/db');
 
 async function testLogin() {
-    try {
-        console.log('🔍 Verificando usuario admin...\n');
+    console.log('\n🔍 VERIFICANDO USUARIOS EN LA BASE DE DATOS...\n');
 
+    try {
         const pool = await poolPromise;
 
-        // Buscar usuario admin
+        // Listar todos los usuarios
         const result = await pool.request()
-            .input('email', sql.VarChar, 'admin@flow360.com')
-            .query('SELECT * FROM usuarios WHERE email = @email');
+            .query('SELECT id, nombre, email, password FROM usuarios');
+
+        console.log(`📊 Total de usuarios: ${result.recordset.length}\n`);
 
         if (result.recordset.length === 0) {
-            console.log('❌ Usuario admin NO encontrado');
-            console.log('📝 Creando usuario admin...\n');
-
-            // Crear usuario admin
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-
-            await pool.request()
-                .input('nombre', sql.VarChar, 'Administrador')
-                .input('email', sql.VarChar, 'admin@flow360.com')
-                .input('llave', sql.VarChar, 'admin123')
-                .input('password', sql.VarChar, hashedPassword)
-                .query('INSERT INTO usuarios (nombre, email, llave, password) VALUES (@nombre, @email, @llave, @password)');
-
-            console.log('✅ Usuario admin creado exitosamente');
-        } else {
-            const user = result.recordset[0];
-            console.log('✅ Usuario encontrado:');
-            console.log('   ID:', user.id);
-            console.log('   Nombre:', user.nombre);
-            console.log('   Email:', user.email);
-            console.log('   Llave:', user.llave);
-            console.log('   Password Hash:', user.password.substring(0, 30) + '...');
-
-            // Probar la contraseña
-            console.log('\n🔐 Probando contraseña "admin123"...');
-            const isValid = await bcrypt.compare('admin123', user.password);
-
-            if (isValid) {
-                console.log('✅ ¡Contraseña CORRECTA!');
-            } else {
-                console.log('❌ Contraseña INCORRECTA');
-                console.log('📝 Actualizando contraseña...\n');
-
-                const hashedPassword = await bcrypt.hash('admin123', 10);
-
-                await pool.request()
-                    .input('email', sql.VarChar, 'admin@flow360.com')
-                    .input('password', sql.VarChar, hashedPassword)
-                    .input('llave', sql.VarChar, 'admin123')
-                    .query('UPDATE usuarios SET password = @password, llave = @llave WHERE email = @email');
-
-                console.log('✅ Contraseña actualizada correctamente');
-            }
+            console.log('❌ No hay usuarios en la base de datos!');
+            console.log('💡 Necesitas crear un usuario primero.\n');
+            return;
         }
 
-        console.log('\n============================================');
-        console.log('✅ VERIFICACIÓN COMPLETADA');
-        console.log('============================================');
-        console.log('Credenciales de acceso:');
-        console.log('  Email: admin@flow360.com');
-        console.log('  Password: admin123');
-        console.log('============================================\n');
+        // Mostrar usuarios (sin password completo)
+        result.recordset.forEach((user, index) => {
+            console.log(`Usuario ${index + 1}:`);
+            console.log(`  ID: ${user.id}`);
+            console.log(`  Nombre: ${user.nombre}`);
+            console.log(`  Email: ${user.email}`);
+            console.log(`  Password Hash: ${user.password.substring(0, 20)}...`);
+            console.log('');
+        });
+
+        // Test de password para admin
+        const adminUser = result.recordset.find(u => u.email === 'admin@flow360.com');
+
+        if (adminUser) {
+            console.log('🔐 PROBANDO CONTRASEÑAS COMUNES PARA admin@flow360.com:\n');
+
+            const commonPasswords = [
+                'admin123',
+                'admin',
+                'password',
+                '123456',
+                'Admin123',
+                'flow360'
+            ];
+
+            for (const pwd of commonPasswords) {
+                const isValid = await bcrypt.compare(pwd, adminUser.password);
+                console.log(`  "${pwd}": ${isValid ? '✅ CORRECTO' : '❌ incorrecto'}`);
+            }
+
+            console.log('\n💡 NOTA: El backend tiene un BYPASS para admin@flow360.com');
+            console.log('   que permite login sin verificar contraseña.\n');
+        } else {
+            console.log('⚠️  No se encontró usuario admin@flow360.com\n');
+        }
 
         process.exit(0);
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('❌ Error:', error.message);
         process.exit(1);
     }
 }

@@ -17,29 +17,30 @@ const Stock = () => {
         deposito: 'Central'
     });
 
-    // Mock data
-    const kpis = {
-        valorTotal: 1250000,
-        itemsBajoMinimo: 12,
-        itemsSinMovimiento: 8
-    };
+    const [kpis, setKpis] = useState({
+        valorTotal: 0,
+        itemsBajoMinimo: 0,
+        itemsSinMovimiento: 0
+    });
 
     const [productos, setProductos] = useState([]);
 
     useEffect(() => {
-        const fetchProductos = async () => {
+        const fetchData = async () => {
             try {
-                const { data } = await api.get('/stock/inventario');
-                setProductos(data);
-            } catch (error) {
-                console.error('Error al cargar productos:', error);
-                // Mantener datos mock si falla
-                setProductos([
-        { id: 1, sku: 'PROD-001', nombre: 'Producto A', deposito: 'Central', cantidad: 150, minimo: 50, precio: 2500, categoria: 'Electrónica' },
+                const [productosRes, resumenRes] = await Promise.all([
+                    api.get('/stock/inventario'),
+                    api.get('/stock/resumen')
                 ]);
+                setProductos(productosRes.data);
+                if (resumenRes.data.kpis) {
+                    setKpis(resumenRes.data.kpis);
+                }
+            } catch (error) {
+                console.error('Error al cargar datos de stock:', error);
             }
         };
-        fetchProductos();
+        fetchData();
     }, []);
 
     const filteredProductos = productos.filter(p => {
@@ -120,8 +121,8 @@ const Stock = () => {
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-4 py-3 font-medium transition-colors border-b-2 ${activeTab === tab
-                                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                                        : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                                    ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                                     }`}
                             >
                                 {tab === 'inventario' && 'Inventario Actual'}
@@ -163,43 +164,43 @@ const Stock = () => {
 
                 {/* Contenido según tab activo */}
                 {activeTab === 'inventario' && (
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-slate-50 dark:bg-slate-700">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">SKU</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Producto</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Depósito</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Cantidad</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Estado</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Precio</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-                            {filteredProductos.map(producto => (
-                                <tr key={producto.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">{producto.sku}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{producto.nombre}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{producto.deposito}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">{producto.cantidad}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{getStockBadge(producto.cantidad, producto.minimo)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">${producto.precio.toLocaleString()}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        <div className="flex gap-2">
-                                            <button className="p-1 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded">
-                                                <Edit size={16} />
-                                            </button>
-                                            <button className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-slate-50 dark:bg-slate-700">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">SKU</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Producto</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Depósito</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Cantidad</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Estado</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Precio</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                                {filteredProductos.map(producto => (
+                                    <tr key={producto.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">{producto.sku}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{producto.nombre}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{producto.deposito}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">{producto.cantidad}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{getStockBadge(producto.cantidad, producto.minimo)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">${producto.precio.toLocaleString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            <div className="flex gap-2">
+                                                <button className="p-1 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded">
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
 
                 {activeTab === 'movimientos' && (
@@ -218,11 +219,10 @@ const Stock = () => {
                                         <p className="text-sm text-slate-500 dark:text-slate-400">{mov.fecha} - {mov.usuario}</p>
                                     </div>
                                     <div className="text-right">
-                                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                                            mov.tipo === 'Entrada' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                            mov.tipo === 'Salida' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                        }`}>
+                                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${mov.tipo === 'Entrada' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                                mov.tipo === 'Salida' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                            }`}>
                                             {mov.tipo}
                                         </span>
                                         <p className={`text-sm font-semibold mt-1 ${mov.cantidad > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
@@ -250,10 +250,9 @@ const Stock = () => {
                                             <p className="font-medium text-slate-800 dark:text-white">{ajuste.producto}</p>
                                             <p className="text-sm text-slate-500 dark:text-slate-400">{ajuste.fecha} - {ajuste.motivo}</p>
                                         </div>
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                            ajuste.estado === 'Aprobado' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                        }`}>
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${ajuste.estado === 'Aprobado' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                            }`}>
                                             {ajuste.estado}
                                         </span>
                                     </div>
@@ -276,8 +275,8 @@ const Stock = () => {
                     <div className="bg-white dark:bg-slate-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xl font-bold text-slate-800 dark:text-white">Nuevo Producto</h3>
-                        <button
-                            onClick={() => setIsModalOpen(false)}
+                            <button
+                                onClick={() => setIsModalOpen(false)}
                                 className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                             >
                                 <X size={20} className="text-slate-600 dark:text-slate-300" />
@@ -432,7 +431,7 @@ const Stock = () => {
                                     className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                                 >
                                     Crear Producto
-                        </button>
+                                </button>
                             </div>
                         </form>
                     </div>

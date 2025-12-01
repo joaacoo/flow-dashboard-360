@@ -60,15 +60,27 @@ const Reglas = () => {
         { value: 'crear_tarea', label: 'Crear tarea pendiente' }
     ];
 
-    const toggleRegla = (id) => {
-        setReglas(reglas.map(regla =>
-            regla.id === id ? { ...regla, activa: !regla.activa } : regla
-        ));
+    const toggleRegla = async (id) => {
+        try {
+            await api.patch(`/reglas/${id}/toggle`);
+            setReglas(reglas.map(regla =>
+                regla.id === id ? { ...regla, activa: !regla.activa } : regla
+            ));
+        } catch (error) {
+            console.error('Error al cambiar estado de regla:', error);
+            alert('Error al cambiar estado de la regla');
+        }
     };
 
-    const deleteRegla = (id) => {
+    const deleteRegla = async (id) => {
         if (confirm('¿Estás seguro de eliminar esta regla?')) {
-            setReglas(reglas.filter(regla => regla.id !== id));
+            try {
+                await api.delete(`/reglas/${id}`);
+                setReglas(reglas.filter(regla => regla.id !== id));
+            } catch (error) {
+                console.error('Error al eliminar regla:', error);
+                alert('Error al eliminar la regla');
+            }
         }
     };
 
@@ -94,7 +106,7 @@ const Reglas = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setIsModalOpen(false)}>
                     <div className="bg-white dark:bg-slate-800 rounded-xl p-6 max-w-2xl w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <Settings className="text-indigo-600 dark:text-indigo-400" size={24} />
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-white">
@@ -122,7 +134,7 @@ const Reglas = () => {
                                         condicion: JSON.stringify({ trigger: newRule.trigger, condition: newRule.condition }),
                                         accion: newRule.action
                                     };
-                                    
+
                                     if (editingRule) {
                                         await api.put(`/reglas/${editingRule.id}`, ruleData);
                                         alert('Regla actualizada exitosamente');
@@ -130,7 +142,7 @@ const Reglas = () => {
                                         await api.post('/reglas', ruleData);
                                         alert('Regla creada exitosamente');
                                     }
-                                    
+
                                     // Recargar reglas
                                     const { data } = await api.get('/reglas');
                                     setReglas(data.map(r => ({
@@ -142,7 +154,7 @@ const Reglas = () => {
                                         activa: r.activo,
                                         descripcion: r.nombre
                                     })));
-                                    
+
                                     setNewRule({ nombre: '', trigger: '', condition: '', action: '', descripcion: '' });
                                     setEditingRule(null);
                                     setIsModalOpen(false);
@@ -264,8 +276,8 @@ const Reglas = () => {
                         <div
                             key={regla.id}
                             className={`p-4 rounded-lg border-2 transition-all ${regla.activa
-                                    ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
-                                    : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700'
+                                ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+                                : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700'
                                 }`}
                         >
                             <div className="flex items-start justify-between">

@@ -17,7 +17,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
     useEffect(() => {
         const html = document.documentElement;
         const isDark = darkMode;
-        
+
         // Forzar aplicación del tema
         if (isDark) {
             html.classList.add('dark');
@@ -28,7 +28,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
         }
         html.style.colorScheme = isDark ? 'dark' : 'light';
         document.body.className = isDark ? 'dark' : '';
-        
+
         localStorage.setItem('flowDarkMode', String(isDark));
     }, [darkMode]);
 
@@ -103,6 +103,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
                     <LogOut size={18} />
                     <span className="font-medium">Cerrar Sesión</span>
                 </button>
+
             </div>
         </header>
     );

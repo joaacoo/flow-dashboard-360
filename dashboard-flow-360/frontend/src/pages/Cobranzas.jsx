@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DollarSign, AlertTriangle, Send, FileText, Plus, X } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../services/api';
@@ -12,21 +12,24 @@ const Cobranzas = () => {
         metodo: 'transferencia',
         referencia: ''
     });
-    // Datos para el aging report
-    const agingData = [
-        { categoria: 'Al día', monto: 125000 },
-        { categoria: '30 días', monto: 85000 },
-        { categoria: '60 días', monto: 45000 },
-        { categoria: '90+ días', monto: 28000 },
-    ];
+    const [agingData, setAgingData] = useState([]);
+    const [topDeudores, setTopDeudores] = useState([]);
 
-    const topDeudores = [
-        { id: 1, cliente: 'Empresa ABC', monto: 45000, diasAtraso: 15, contacto: 'contacto@abc.com' },
-        { id: 2, cliente: 'Comercio XYZ', monto: 38000, diasAtraso: 45, contacto: 'info@xyz.com' },
-        { id: 3, cliente: 'Industria DEF', monto: 28000, diasAtraso: 90, contacto: 'ventas@def.com' },
-        { id: 4, cliente: 'Tienda GHI', monto: 22000, diasAtraso: 30, contacto: 'compras@ghi.com' },
-        { id: 5, cliente: 'Mayorista JKL', monto: 18000, diasAtraso: 60, contacto: 'admin@jkl.com' },
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [agingRes, deudoresRes] = await Promise.all([
+                    api.get('/collections/aging-report'),
+                    api.get('/collections/top-deudores')
+                ]);
+                setAgingData(agingRes.data);
+                setTopDeudores(deudoresRes.data);
+            } catch (error) {
+                console.error('Error al cargar datos de cobranzas:', error);
+            }
+        };
+        fetchData();
+    }, []);
 
     const totalACobrar = agingData.reduce((sum, item) => sum + item.monto, 0);
     const deudaVencida = agingData.filter(item => item.categoria !== 'Al día').reduce((sum, item) => sum + item.monto, 0);
@@ -54,7 +57,7 @@ const Cobranzas = () => {
                     <p className="text-slate-600 dark:text-slate-400 mt-2">Gestión de cuentas por cobrar y seguimiento de deuda</p>
                 </div>
                 <div className="flex gap-3">
-                    <button 
+                    <button
                         onClick={() => {
                             const deudoresVencidos = topDeudores.filter(d => d.diasAtraso >= 30);
                             if (deudoresVencidos.length === 0) {
@@ -71,7 +74,7 @@ const Cobranzas = () => {
                         <Send size={20} />
                         Enviar Recordatorios
                     </button>
-                    <button 
+                    <button
                         onClick={() => setIsModalOpen(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                     >
@@ -94,7 +97,7 @@ const Cobranzas = () => {
                         </div>
                     </div>
                     <div className="flex gap-4 mt-6">
-                        <button 
+                        <button
                             onClick={() => {
                                 // Mostrar detalle en un modal o nueva vista
                                 const detalle = `Total a Cobrar: $${totalACobrar.toLocaleString()}\n\nDesglose:\n${agingData.map(a => `- ${a.categoria}: $${a.monto.toLocaleString()}`).join('\n')}\n\nDeuda Vencida: $${deudaVencida.toLocaleString()}`;
@@ -104,14 +107,14 @@ const Cobranzas = () => {
                         >
                             Ver Detalle
                         </button>
-                        <button 
+                        <button
                             onClick={() => {
                                 // Exportar a CSV
                                 const csvContent = [
                                     ['Categoría', 'Monto'].join(','),
                                     ...agingData.map(a => [a.categoria, a.monto].join(','))
                                 ].join('\n');
-                                
+
                                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                                 const link = document.createElement('a');
                                 const url = URL.createObjectURL(blob);
@@ -142,15 +145,15 @@ const Cobranzas = () => {
                     <div className="grid grid-cols-3 gap-4 mt-6">
                         <div className="text-center">
                             <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">30 días</p>
-                            <p className="text-lg font-bold text-slate-800 dark:text-white">${agingData[1].monto.toLocaleString()}</p>
+                            <p className="text-lg font-bold text-slate-800 dark:text-white">${(agingData[1]?.monto || 0).toLocaleString()}</p>
                         </div>
                         <div className="text-center">
                             <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">60 días</p>
-                            <p className="text-lg font-bold text-slate-800 dark:text-white">${agingData[2].monto.toLocaleString()}</p>
+                            <p className="text-lg font-bold text-slate-800 dark:text-white">${(agingData[2]?.monto || 0).toLocaleString()}</p>
                         </div>
                         <div className="text-center">
                             <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">90+ días</p>
-                            <p className="text-lg font-bold text-red-600 dark:text-red-400">${agingData[3].monto.toLocaleString()}</p>
+                            <p className="text-lg font-bold text-red-600 dark:text-red-400">${(agingData[3]?.monto || 0).toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
@@ -209,7 +212,7 @@ const Cobranzas = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">{getBadgeAtraso(deudor.diasAtraso)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        <button 
+                                        <button
                                             onClick={() => setIsModalOpen(true)}
                                             className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors text-sm"
                                         >

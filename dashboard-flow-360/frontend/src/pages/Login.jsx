@@ -27,6 +27,7 @@ const Login = () => {
       navigate('/');
     } catch (err) {
       setLoading(false);
+      setPassword(''); // Solo limpiar la contraseña, mantener el email
       setError(err.response?.data?.message || 'Usuario o contraseña incorrectos');
     }
   };

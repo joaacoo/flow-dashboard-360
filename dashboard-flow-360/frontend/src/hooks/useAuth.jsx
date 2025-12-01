@@ -8,30 +8,35 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const { data } = await api.get('/auth/me');
-          setUser(data);
-        } catch (error) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      api.get('/auth/me')
+        .then(res => {
+          setUser(res.data);
+          setLoading(false);
+        })
+        .catch(() => {
           localStorage.removeItem('token');
-        }
-      }
+          setUser(null);
+          setLoading(false);
+        });
+    } else {
       setLoading(false);
-    };
-    loadUser();
+    }
   }, []);
 
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', data.token);
-    setUser(data.user);
+    const response = await api.post('/auth/login', { email, password });
+    const { token, user } = response.data;
+    localStorage.setItem('token', token);
+    setUser(user);
+    return user;
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    window.location.href = '/login';
   };
 
   return (
@@ -42,3 +47,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+

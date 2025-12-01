@@ -12,6 +12,10 @@ import Logistica from './pages/Logistica';
 import Reglas from './pages/Reglas';
 import Produccion from './pages/Produccion';
 import Cobranzas from './pages/Cobranzas';
+import Tango from './pages/Integrations/Tango';
+import TestHome from './pages/TestHome';
+
+// Test route placeholder (moved inside Routes)
 
 // Placeholder pages for other modules to avoid errors
 const Placeholder = ({ title }) => <div className="text-2xl font-bold text-slate-400">Módulo {title} en construcción</div>;
@@ -25,7 +29,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -40,6 +44,8 @@ function App() {
           <Route path="/produccion" element={<ProtectedRoute><Produccion /></ProtectedRoute>} />
           <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
           <Route path="/reglas" element={<ProtectedRoute><Reglas /></ProtectedRoute>} />
+          <Route path="/tango" element={<ProtectedRoute><Tango /></ProtectedRoute>} />
+          <Route path="/testhome" element={<ProtectedRoute><TestHome /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

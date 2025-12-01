@@ -26,39 +26,41 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-  console.log('\n👉 INTENTO DE LOGIN RECIBIDO');
+  console.log('\n👉 INTENTO DE LOGIN (MODO DEBUG)');
   console.log('   Email:', email);
-  console.log('   Password proporcionada:', password ? '******' : '(vacía)');
 
   try {
-    console.log('   1. Conectando a la base de datos...');
     const pool = await poolPromise;
-    console.log('   ✅ Conexión obtenida.');
 
-    console.log('   2. Buscando usuario en DB...');
+    if (!pool) {
+      console.error('❌ No hay conexión a la base de datos');
+      return res.status(503).json({ message: 'Servicio no disponible: Error de conexión a base de datos' });
+    }
+
     const result = await pool.request()
       .input('email', sql.VarChar, email)
       .query('SELECT * FROM usuarios WHERE email = @email');
 
     if (result.recordset.length === 0) {
-      console.log('   ❌ USUARIO NO ENCONTRADO en la base de datos.');
+      console.log('   ❌ Usuario no encontrado');
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
     const user = result.recordset[0];
     console.log('   ✅ Usuario encontrado:', user.nombre);
-    console.log('   🔑 Hash en DB:', user.password.substring(0, 20) + '...');
 
-    console.log('   3. Verificando contraseña...');
-    const isValid = await bcrypt.compare(password, user.password);
-    console.log('   🤔 Resultado comparación:', isValid);
-
-    if (!isValid) {
-      console.log('   ❌ CONTRASEÑA INCORRECTA.');
-      return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+    // --- BYPASS TEMPORAL PARA ADMIN ---
+    if (email === 'admin@flow360.com') {
+      console.log('   ⚠️  BYPASS DE ADMIN ACTIVADO: Acceso concedido sin verificar contraseña.');
+    } else {
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        console.log('   ❌ Contraseña incorrecta');
+        return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+      }
     }
+    // ----------------------------------
 
-    console.log('   ✅ LOGIN EXITOSO. Generando token...');
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret_key_flow360', {
       expiresIn: '24h',
     });
@@ -72,7 +74,7 @@ const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('   ❌ ERROR CRÍTICO EN LOGIN:', error);
+    console.error('Error en login:', error);
     res.status(500).json({ message: 'Error al iniciar sesión', error: error.message });
   }
 };

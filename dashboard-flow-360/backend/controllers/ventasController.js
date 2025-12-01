@@ -1,7 +1,6 @@
 const poolPromise = require('../config/db');
 const sql = require('mssql');
 
-// Obtener todos los pedidos
 const getPedidos = async (req, res) => {
     try {
         const pool = await poolPromise;
@@ -13,7 +12,6 @@ const getPedidos = async (req, res) => {
             FROM pedidos
             ORDER BY fecha_creacion DESC
         `);
-
         res.json(result.recordset);
     } catch (error) {
         console.error('Error al obtener pedidos:', error);
@@ -21,20 +19,14 @@ const getPedidos = async (req, res) => {
     }
 };
 
-// Crear nuevo pedido
 const crearPedido = async (req, res) => {
     const { cliente, productos, fecha, estado } = req.body;
-
     try {
         const pool = await poolPromise;
-        // Calcular total
         const total = productos.reduce((sum, p) => sum + (p.cantidad * p.precio), 0);
-
-        // Generar número de pedido
         const countResult = await pool.request().query('SELECT COUNT(*) as total FROM pedidos');
         const numeroPedido = `#VTA-${String(countResult.recordset[0].total + 1).padStart(3, '0')}`;
 
-        // Insertar pedido
         await pool.request()
             .input('numero_pedido', sql.NVarChar, numeroPedido)
             .input('cliente', sql.NVarChar, cliente)
@@ -53,7 +45,32 @@ const crearPedido = async (req, res) => {
     }
 };
 
-module.exports = {
-    getPedidos,
-    crearPedido
+const getResumen = async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        // Mock data or simple query for now
+        res.json({
+            ventas_hoy: 0,
+            ventas_mes: 0,
+            pedidos_pendientes: 0
+        });
+    } catch (error) {
+        console.error('Error en resumen:', error);
+        res.status(500).json({ error: 'Error al obtener resumen' });
+    }
 };
+
+const getDashboardData = async (req, res) => {
+    try {
+        // Mock dashboard data to prevent crash
+        res.json({
+            chartData: [],
+            recentSales: []
+        });
+    } catch (error) {
+        console.error('Error en dashboard data:', error);
+        res.status(500).json({ error: 'Error al obtener datos del dashboard' });
+    }
+};
+
+module.exports = { getPedidos, crearPedido, getResumen, getDashboardData };

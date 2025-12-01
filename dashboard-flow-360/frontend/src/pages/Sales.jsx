@@ -13,35 +13,58 @@ const Sales = () => {
   });
   const [ultimosPedidos, setUltimosPedidos] = useState([]);
 
+  const [kpis, setKpis] = useState({
+    ventasMes: 0,
+    tendencia: 0,
+    pedidosActivos: 0,
+    ticketPromedio: 0
+  });
+  const [ventasData, setVentasData] = useState([]);
+
   useEffect(() => {
-    const fetchPedidos = async () => {
+    const fetchData = async () => {
       try {
-        const { data } = await api.get('/ventas/pedidos');
-        setUltimosPedidos(data);
+        const [pedidosRes, dashboardRes] = await Promise.all([
+          api.get('/ventas/pedidos'),
+          api.get('/ventas/dashboard')
+        ]);
+
+        setUltimosPedidos(pedidosRes.data || []);
+        setKpis(dashboardRes.data?.kpis || {
+          ventasMes: 0,
+          tendencia: 0,
+          pedidosActivos: 0,
+          ticketPromedio: 0
+        });
+        setVentasData(dashboardRes.data?.chartData || []);
       } catch (error) {
-        console.error('Error al cargar pedidos:', error);
-        // Mantener datos mock si falla
+        console.error('Error al cargar datos de ventas:', error);
+        // Set default values on error
+        setUltimosPedidos([]);
+        setVentasData([]);
       }
     };
-    fetchPedidos();
+    fetchData();
   }, []);
-  // Mock data para el gráfico
-  const ventasData = [
-    { dia: 'Lun', ventas: 45000 },
-    { dia: 'Mar', ventas: 52000 },
-    { dia: 'Mié', ventas: 48000 },
-    { dia: 'Jue', ventas: 61000 },
-    { dia: 'Vie', ventas: 55000 },
-    { dia: 'Sáb', ventas: 67000 },
-    { dia: 'Dom', ventas: 58000 },
-  ];
 
-
-  const kpis = {
-    ventasMes: 386000,
-    tendencia: 12.5,
-    pedidosActivos: 24,
-    ticketPromedio: 16083
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/ventas/pedidos', formData);
+      alert('Venta registrada exitosamente');
+      setIsModalOpen(false);
+      setFormData({
+        cliente: '',
+        productos: [{ nombre: '', cantidad: 1, precio: 0 }],
+        fecha: new Date().toISOString().split('T')[0],
+        estado: 'Pendiente'
+      });
+      // Refresh data
+      const pedidosRes = await api.get('/ventas/pedidos');
+      setUltimosPedidos(pedidosRes.data || []);
+    } catch (error) {
+      alert('Error al registrar venta: ' + (error.response?.data?.message || error.message));
+    }
   };
 
   const getEstadoBadge = (estado) => {
@@ -60,14 +83,18 @@ const Sales = () => {
           <p className="text-slate-600 dark:text-slate-400 mt-2">Dashboard comercial y gestión de pedidos</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={() => {
+              if (!ultimosPedidos || ultimosPedidos.length === 0) {
+                alert('No hay pedidos para exportar');
+                return;
+              }
               // Generar CSV con los datos de ventas
               const csvContent = [
                 ['ID Pedido', 'Cliente', 'Fecha', 'Monto', 'Estado'].join(','),
                 ...ultimosPedidos.map(p => [p.id, p.cliente, p.fecha, p.monto, p.estado].join(','))
               ].join('\n');
-              
+
               const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
               const link = document.createElement('a');
               const url = URL.createObjectURL(blob);
@@ -83,7 +110,7 @@ const Sales = () => {
             <FileText size={20} />
             Exportar Reporte
           </button>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
@@ -99,9 +126,9 @@ const Sales = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Ventas del Mes</p>
-              <p className="text-3xl font-bold text-slate-800 dark:text-white">${kpis.ventasMes.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-slate-800 dark:text-white">${(kpis.ventasMes || 0).toLocaleString()}</p>
               <div className="flex items-center gap-2 mt-2">
-                {kpis.tendencia > 0 ? (
+                {(kpis.tendencia || 0) > 0 ? (
                   <>
                     <TrendingUp className="text-green-500" size={20} />
                     <span className="text-sm font-semibold text-green-500">+{kpis.tendencia}%</span>
@@ -125,7 +152,7 @@ const Sales = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Pedidos Activos</p>
-              <p className="text-3xl font-bold text-slate-800 dark:text-white">{kpis.pedidosActivos}</p>
+              <p className="text-3xl font-bold text-slate-800 dark:text-white">{kpis.pedidosActivos || 0}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">En proceso</p>
             </div>
             <div className="p-4 bg-orange-100 dark:bg-orange-900 rounded-lg">
@@ -138,7 +165,7 @@ const Sales = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Ticket Promedio</p>
-              <p className="text-3xl font-bold text-slate-800 dark:text-white">${kpis.ticketPromedio.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-slate-800 dark:text-white">${(kpis.ticketPromedio || 0).toLocaleString()}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Por pedido</p>
             </div>
             <div className="p-4 bg-green-100 dark:bg-green-900 rounded-lg">
@@ -152,36 +179,42 @@ const Sales = () => {
       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
         <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Evolución de Ventas (Últimos 7 días)</h2>
         <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={ventasData}>
-              <defs>
-                <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.6} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="dia" stroke="#64748b" />
-              <YAxis stroke="#64748b" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1e293b',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-                formatter={(value) => `$${value.toLocaleString()}`}
-              />
-              <Area
-                type="monotone"
-                dataKey="ventas"
-                stroke="#6366f1"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorVentas)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          {ventasData && ventasData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={ventasData}>
+                <defs>
+                  <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="dia" stroke="#64748b" />
+                <YAxis stroke="#64748b" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1e293b',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }}
+                  formatter={(value) => `$${value.toLocaleString()}`}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="ventas"
+                  stroke="#6366f1"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorVentas)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <p className="text-slate-500 dark:text-slate-400">No hay datos de ventas para mostrar</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -202,15 +235,23 @@ const Sales = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {ultimosPedidos.map(pedido => (
-                <tr key={pedido.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">{pedido.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{pedido.cliente}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{pedido.fecha}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 dark:text-green-400">${pedido.monto.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{getEstadoBadge(pedido.estado)}</td>
+              {ultimosPedidos && ultimosPedidos.length > 0 ? (
+                ultimosPedidos.map(pedido => (
+                  <tr key={pedido.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">{pedido.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{pedido.cliente}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{pedido.fecha}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 dark:text-green-400">${pedido.monto.toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getEstadoBadge(pedido.estado)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                    No hay pedidos para mostrar
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -362,8 +403,7 @@ const Sales = () => {
                   Crear Venta
                 </button>
               </div>
-                        </form>
-                        {/* Cambiar onSubmit del form */}
+            </form>
           </div>
         </div>
       )}

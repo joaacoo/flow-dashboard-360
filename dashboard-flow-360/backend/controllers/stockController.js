@@ -94,9 +94,26 @@ const eliminarProducto = async (req, res) => {
     }
 };
 
+// Obtener resumen de stock
+const getStockSummary = async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        // Mock summary for now
+        res.json({
+            total_items: 0,
+            low_stock_items: 0,
+            total_value: 0
+        });
+    } catch (error) {
+        console.error('Error en resumen de stock:', error);
+        res.status(500).json({ error: 'Error al obtener resumen de stock' });
+    }
+};
+
 module.exports = {
     getInventario,
     crearProducto,
     actualizarProducto,
-    eliminarProducto
+    eliminarProducto,
+    getStockSummary
 };

@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const crmController = require('../controllers/crmController');
-const verifyToken = require('../middleware/auth');
+const { getLeads, createLead, updateLead, getDashboardStats } = require('../controllers/crmController');
+const { verifyToken } = require('../middleware/auth');
 
-router.get('/oportunidades', verifyToken, crmController.getOportunidades);
-router.get('/casos', verifyToken, crmController.getCasos);
+router.get('/leads', verifyToken, getLeads);
+router.post('/leads', verifyToken, createLead);
+router.put('/leads/:id', verifyToken, updateLead);
+router.get('/stats', verifyToken, getDashboardStats);
 
 module.exports = router;

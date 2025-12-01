@@ -1,34 +1,45 @@
 const sql = require('mssql');
 require('dotenv').config();
 
+// Configuración de la base de datos SQL Server
 const config = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  server: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  port: parseInt(process.env.DB_PORT),
-  options: {
-    encrypt: false,
-    trustServerCertificate: true,
-  },
+    user: process.env.DB_USER || 'node_app',
+    password: process.env.DB_PASSWORD || 'NodeAppPass123',
+    server: process.env.DB_SERVER || 'localhost',
+    database: process.env.DB_NAME || 'flow360',
+    port: parseInt(process.env.DB_PORT || '1433'),
+    options: {
+        encrypt: false,
+        trustServerCertificate: true,
+        enableArithAbort: true,
+        connectionTimeout: 10000 // 10 segundos timeout
+    },
+    pool: {
+        max: 10,
+        min: 0,
+        idleTimeoutMillis: 30000
+    }
 };
 
+// Crear el pool de conexiones
 const pool = new sql.ConnectionPool(config);
 
-pool.connect()
-  .then(() => {
-    console.log('✅ Conectado a SQL Server');
-    console.log(`   Base de datos: ${process.env.DB_NAME}`);
-    console.log(`   Servidor: ${process.env.DB_HOST}`);
-    console.log(`   Usuario: ${process.env.DB_USER}`);
-  })
-  .catch((err) => {
-    console.error('❌ Error de conexión a la base de datos:');
-    console.error('   Mensaje:', err.message);
-    console.error('\n⚠️  Verifica:');
-    console.error('   1. SQL Server está corriendo');
-    console.error('   2. La base de datos "flow360" existe');
-    console.error('   3. El usuario "node_app" tiene permisos');
-  });
+// Conectar y exportar la promesa del pool conectado
+const poolPromise = pool.connect()
+    .then((pool) => {
+        console.log('✅ Conectado a SQL Server correctamente');
+        return pool;
+    })
+    .catch((err) => {
+        console.error('❌ Error de conexión a la base de datos:', err.message);
+        console.error('Configuración:', {
+            server: config.server,
+            database: config.database,
+            user: config.user,
+            port: config.port
+        });
+        // No cerrar el proceso, permitir que la app intente reconectar
+        return null;
+    });
 
-module.exports = pool;
+module.exports = poolPromise;
