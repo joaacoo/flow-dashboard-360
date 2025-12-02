@@ -156,21 +156,25 @@ const Logistica = () => {
         }
     ];
 
-    // Simular actualización de posición GPS cada 5 segundos
+    // Simular actualización de posición GPS cada 2 segundos
     useEffect(() => {
         const interval = setInterval(() => {
             setCamiones(prev => prev.map(camion => {
                 if (camion.estado === 'En ruta') {
                     // Mover ligeramente la posición (simulación de movimiento)
+                    // Variación aleatoria pequeña para simular movimiento real
+                    const latVariation = (Math.random() - 0.5) * 0.001;
+                    const lngVariation = (Math.random() - 0.5) * 0.001;
+
                     return {
                         ...camion,
-                        lat: camion.lat + (Math.random() - 0.5) * 0.01,
-                        lng: camion.lng + (Math.random() - 0.5) * 0.01,
+                        lat: camion.lat + latVariation,
+                        lng: camion.lng + lngVariation,
                     };
                 }
                 return camion;
             }));
-        }, 5000);
+        }, 2000); // Actualizar cada 2 segundos para ver movimiento
 
         return () => clearInterval(interval);
     }, []);
@@ -259,15 +263,15 @@ const Logistica = () => {
                                 key={camion.id}
                                 onClick={() => handleTruckSelect(camion)}
                                 className={`p-3 rounded-lg cursor-pointer transition-all border-l-4 ${selectedTruckId === camion.id
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 shadow-sm'
-                                        : 'hover:bg-slate-50 dark:hover:bg-slate-700 border-transparent'
+                                    ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 shadow-sm'
+                                    : 'hover:bg-slate-50 dark:hover:bg-slate-700 border-transparent'
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-1">
                                     <span className="font-semibold text-slate-800 dark:text-white">{camion.nombre}</span>
                                     <span className={`text-xs px-2 py-0.5 rounded-full ${camion.estado === 'En ruta'
-                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                        : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                         }`}>
                                         {camion.estado}
                                     </span>
